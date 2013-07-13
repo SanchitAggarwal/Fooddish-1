@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Hotel {
 	String hotelId;
 	String hotelName;
-	ArrayList<Item> menuItems;
+	ArrayList<MenuItem> menuItems;
 	ArrayList<Review> userReviews;
 	Location location;
 	long checkinsCount;
@@ -14,7 +14,7 @@ public class Hotel {
 	double ratings;
 	String contact;
 	
-	public Hotel(String hotelId, String hotelName, ArrayList<Item> menuItems,
+	public Hotel(String hotelId, String hotelName, ArrayList<MenuItem> menuItems,
 			ArrayList<Review> userReviews, Location location,
 			long checkinsCount, long usersCount, long tipCount, double ratings,
 			String contact) {
@@ -42,10 +42,10 @@ public class Hotel {
 	public void setHotelName(String hotelName) {
 		this.hotelName = hotelName;
 	}
-	public ArrayList<Item> getMenuItems() {
+	public ArrayList<MenuItem> getMenuItems() {
 		return menuItems;
 	}
-	public void setMenuItems(ArrayList<Item> menuItems) {
+	public void setMenuItems(ArrayList<MenuItem> menuItems) {
 		this.menuItems = menuItems;
 	}
 	public ArrayList<Review> getUserReviews() {

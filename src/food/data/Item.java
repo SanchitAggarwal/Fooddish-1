@@ -3,14 +3,12 @@ package food.data;
 public class Item {
 	int itemId;
 	String itemName;
-	String imgurl;
-	int rating;
+	String itemDesc;
 	
-	public Item(int itemId, String itemName, String imgurl, int rating) {
+	public Item(int itemId, String itemName, String itemString) {
 		this.itemId = itemId;
 		this.itemName = itemName;
-		this.imgurl = imgurl;
-		this.rating = rating;
+		this.itemDesc = itemString;
 	}
 	public int getItemId() {
 		return itemId;
@@ -24,18 +22,10 @@ public class Item {
 	public void setItemName(String name) {
 		this.itemName = name;
 	}
-	public String getImgurl() {
-		return imgurl;
+	public String getItemDesc() {
+		return itemDesc;
 	}
-	public void setImgurl(String imgurl) {
-		this.imgurl = imgurl;
+	public void setItemDesc(String itemDesc) {
+		this.itemDesc = itemDesc;
 	}
-	public int getRating() {
-		return rating;
-	}
-	public void setRating(int rating) {
-		this.rating = rating;
-	}
-	
-	
 }

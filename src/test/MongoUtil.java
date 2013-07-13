@@ -10,6 +10,7 @@ public class MongoUtil {
 	private static MongoClient mongoClient;
 	private static DB db;
 	public static DBCollection hotelCollection;
+	public static DBCollection itemCollection;
 	public static DBCollection topItems;
 	
 	static{
@@ -20,6 +21,7 @@ public class MongoUtil {
 		}
 		db = mongoClient.getDB("food");
 		hotelCollection = db.getCollection("hotelCollection");
+		itemCollection = db.getCollection("itemCollection");
 	}
 
 	@Override

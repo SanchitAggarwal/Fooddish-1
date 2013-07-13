@@ -9,22 +9,31 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+
+import org.bson.types.ObjectId;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
 import food.data.Hotel;
 import food.data.Item;
 import food.data.Location;
+import food.data.MenuItem;
 import food.data.Review;
 
 public class InsertTest {
+	static int itemId =1;
+	
 	public static void main(String[] args) {
 		System.out.println("Hello World");
 		
@@ -34,19 +43,29 @@ public class InsertTest {
 		String result = makeRestCall("https://api.foursquare.com/v2/venues/explore?venuePhotos=1&ll="
 		+lat+","+lng+"&section=food,drinks,coffee&client_secret=RZG14LIXYDCWNBZXMRNI0O5J11CDVFJTALZP2LBGXO5RNB5G&client_id=Y4KGBABM13G0KEYBZZUIDE1PYMUCEZJHRFAFJ0BEHBH20KCL&v=20130713");
 		//System.out.println(result);
-		
-		insertFrom4Square(result,createMapFromFile("/Users/GreatGod/Desktop/bakery.list"));
+		HashMap<String, ArrayList<Item>> map = new HashMap<String, ArrayList<Item>>();
+		map.put("bakery", createListFromFile("/Users/GreatGod/Desktop/bakery.list"));
+		map.put("rest", createListFromFile("/Users/GreatGod/Desktop/rest.list"));
+		map.put("ice", createListFromFile("/Users/GreatGod/Desktop/ice.list"));
+		map.put("cafe", createListFromFile("/Users/GreatGod/Desktop/cafe.list"));
+		insertFrom4Square(result,map);
+
 	}
 	
-	private static Map<String, Item> createMapFromFile(String fileName) {
+	private static ArrayList<Item> createListFromFile(String fileName) {
 		BufferedReader in = null;
-		Map<String, String> map = new Map<String, Item>();
+		ArrayList<Item> list = new ArrayList<Item>();
+		int itemId=0;
 		try {
 			in = new BufferedReader(new FileReader(fileName));
 			String line = null;
 			while ((line = in.readLine()) != null) {
 				String[] splits = line.trim().split(" \\| ");
-				map.put(fileName, )
+				Item item = new Item(itemId++, splits[0],null);
+				if(splits.length > 1 && splits[1]!=null){
+					item.setItemDesc(splits[1]);
+				}
+				list.add(item);
 			}
 		} catch (FileNotFoundException e) {
 			System.err.println("File " + fileName + " does not exist");
@@ -59,14 +78,11 @@ public class InsertTest {
 				System.err.println("Error while closing File : " + fileName);
 			}
 		}
-		
+		return list;
 	}
-	
-	private static ArrayList<Item>
 
-	private static void insertFrom4Square(String result, Map<String, String> map){
+	private static void insertFrom4Square(String result, HashMap<String, ArrayList<Item>> map){
 		JsonParser jsonParser = new JsonParser();
-		int itemId =1;
 		JsonArray items = jsonParser.parse(result).getAsJsonObject().get("response")
 		.getAsJsonObject().get("groups")
 		.getAsJsonArray().get(0)
@@ -119,11 +135,18 @@ public class InsertTest {
 			}
 			JsonArray phrases = new JsonArray();
 			if(ithItem.get("phrases") != null) phrases = ithItem.get("phrases").getAsJsonArray();
-			ArrayList<Item> items2 = new ArrayList<Item>();
+			ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+			
 			for(int k=0;k<phrases.size();k++){
-				items2.add(new Item(itemId++, phrases.get(k).getAsJsonObject().get("phrase").getAsString(),null, 1));
+				//menuItems.add(new MenuItem(new Item(itemId++, 
+					//								phrases.get(k).getAsJsonObject().get("phrase").getAsString(), 
+					//								phrases.get(k).getAsJsonObject().get("sample").getAsJsonObject().get("text").getAsString()), 
+						//	getRandomNumber(1, 5),"default.jpg"));
 			}
-			Hotel hotel = new Hotel(id,name, items2, reviews,locationObj, checkinsCount,usersCount, tipCount,rating,contact);
+			String categories = venue.get("categories").getAsJsonArray().get(0).getAsJsonObject().get("name").getAsString();
+			menuItems.addAll(getMenuItemFromCatagory(map,categories));
+			
+			Hotel hotel = new Hotel(id,name, menuItems, reviews,locationObj, checkinsCount,usersCount, tipCount,rating,contact);
 			Gson gson = new Gson();
 			DBObject obj = (DBObject)JSON.parse(gson.toJson(hotel));
 			MongoUtil.hotelCollection.save(obj);
@@ -131,6 +154,47 @@ public class InsertTest {
 		}
 	}
 	
+	static int getRandomNumber(int min, int max)
+	{
+	    Random rand = new Random();
+	    return rand.nextInt(max - min + 1) + min;
+	}
+	
+	private static ArrayList<MenuItem> getMenuItemFromCatagory(HashMap<String, ArrayList<Item>> map, String cat) {
+		String lowerCaseCat = cat.toLowerCase();
+		if(lowerCaseCat.contains("ice") || lowerCaseCat.contains("cream")){
+			System.out.println("ice");
+			return getMenuList(map.get("ice"));
+		}else if(lowerCaseCat.contains("cafe") || lowerCaseCat.contains("tea") || lowerCaseCat.contains("café")){
+			System.out.println("cafe");
+			return getMenuList(map.get("cafe"));
+		}else if(lowerCaseCat.contains("bakery") || lowerCaseCat.contains("biscuit")){
+			System.out.println("bakery");
+			return getMenuList(map.get("bakery"));
+		}else{
+			System.out.println("rest");
+			return getMenuList(map.get("rest"));
+		}
+	}
+
+	private static ArrayList<MenuItem> getMenuList(ArrayList<Item> items) {
+		ArrayList<MenuItem> result = new ArrayList<MenuItem>();
+		Gson gson = new Gson();
+		if(items == null)
+			return result;
+		for(Item item : items){
+			BasicDBObject dbquery = new BasicDBObject("itemName", item.getItemName());
+			DBObject obj = MongoUtil.itemCollection.findOne(dbquery);
+			if(obj == null){
+				obj = (DBObject)JSON.parse(gson.toJson(item));
+				MongoUtil.itemCollection.save(obj);
+			}
+			result.add(new MenuItem((ObjectId)obj.get("_id"), getRandomNumber(1, 5), "default.jpg")); 
+			
+		}
+		return result;
+	}
+
 	JsonObject checkNotNull(JsonObject obj, String item){
 		if(obj.get(item) != null){
 			return obj.get(item).getAsJsonObject();
