@@ -1,4 +1,4 @@
-package food.service;
+package food.data;
 
 public class Item {
 	int itemId;
@@ -6,6 +6,12 @@ public class Item {
 	String imgurl;
 	int rating;
 	
+	public Item(int itemId, String itemName, String imgurl, int rating) {
+		this.itemId = itemId;
+		this.itemName = itemName;
+		this.imgurl = imgurl;
+		this.rating = rating;
+	}
 	public int getItemId() {
 		return itemId;
 	}

@@ -20,6 +20,7 @@
         <version>2.3</version>
         <configuration>
           <warSourceDirectory>WebContent</warSourceDirectory>
+          <webappDirectory>WebContent</webappDirectory>
           <failOnMissingWebXml>false</failOnMissingWebXml>
         </configuration>
       </plugin>
@@ -28,7 +29,22 @@
   <dependencies>
   	<dependency>
   		<groupId>com.sun.jersey</groupId>
-  		<artifactId>jersey-core</artifactId>
+  		<artifactId>jersey-server</artifactId>
+  		<version>1.17.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.google.code.gson</groupId>
+  		<artifactId>gson</artifactId>
+  		<version>2.2.4</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.mongodb</groupId>
+  		<artifactId>mongo-java-driver</artifactId>
+  		<version>2.11.2</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.sun.jersey</groupId>
+  		<artifactId>jersey-servlet</artifactId>
   		<version>1.17.1</version>
   	</dependency>
   </dependencies>

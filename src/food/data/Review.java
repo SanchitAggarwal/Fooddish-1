@@ -1,17 +1,26 @@
-package food.service;
+package food.data;
 
 import java.util.Date;
 
 public class Review {
-	int reviewId;
+	String reviewId;
 	String authorName;
 	String desc;
 	int rating;
 	Date date;
-	public int getReviewId() {
+	
+	public Review(String reviewId, String authorName, String desc, int rating,
+			Date date) {
+		this.reviewId = reviewId;
+		this.authorName = authorName;
+		this.desc = desc;
+		this.rating = rating;
+		this.date = date;
+	}
+	public String getReviewId() {
 		return reviewId;
 	}
-	public void setReviewId(int reviewId) {
+	public void setReviewId(String reviewId) {
 		this.reviewId = reviewId;
 	}
 	public String getAuthorName() {
