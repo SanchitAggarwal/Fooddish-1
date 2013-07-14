@@ -14,8 +14,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.bson.types.ObjectId;
-
 import test.MongoUtil;
 
 import com.google.gson.Gson;
@@ -63,7 +61,8 @@ public class HotelService {
 			result.append(cur.next().toString());
 			if(cur.hasNext()) result.append(", ");
 		}
-		return callback+"({ \"result\" : ["+ result.toString() +"]})";
+		//return callback+"({ \"result\" : ["+ result.toString() +"]})";
+		return "{ \"result\" : ["+ result.toString() +"]}";
 	} 
 
 	@Path("topItems")	
@@ -85,52 +84,96 @@ public class HotelService {
 			dbquery.put("location.lng",new BasicDBObject("$gt", eastLong).append("$lt", westLong));
 		}
 
-		HashMap<ObjectId, Double> ratingMap = new HashMap<ObjectId, Double>();
-		TreeMap<ObjectId,Double> sorted_map = new TreeMap<ObjectId,Double>(new ValueComparator(ratingMap));
-		DBCursor cur = MongoUtil.hotelCollection.find();
+		HashMap<String, Double> ratingMap = new HashMap<String, Double>();
+		TreeMap<String,Double> sorted_map = new TreeMap<String,Double>(new ValueComparator(ratingMap));
+		DBCursor cur = MongoUtil.hotelCollection.find(dbquery);
 		
 		StringBuffer result = new StringBuffer().append("");
 		JsonParser jsonParser = new JsonParser();
 		Gson gson = new Gson();
 		while(cur.hasNext()){
 			ArrayList<MenuItem> menuItems = gson.fromJson(jsonParser.parse(cur.next().toString()),Hotel.class).getMenuItems();
+			
 			for(MenuItem menuItem : menuItems){
-				double score=0;
-				if(ratingMap.get(menuItem.getItem())!=null){
-					score+=ratingMap.get(menuItem.getItem());
+				//System.out.println(menuItem.getItemID());
+				double score=menuItem.getRating();
+				if(ratingMap.get(menuItem.getItemID())!=null){
+					score += ratingMap.get(menuItem.getItemID());
 				}
-				ratingMap.put(menuItem.getItem(), score);
+				ratingMap.put(menuItem.getItemID(), score);
 			}
 		
 		}
+		//System.out.println(ratingMap);
 		sorted_map.putAll(ratingMap);
+		//System.out.println(sorted_map);
 		int count=0;
-		for(Entry<ObjectId, Double> e : sorted_map.entrySet()){
-			BasicDBObject idQuery = new BasicDBObject("_id",e.getKey());
+		for(Entry<String, Double> e : sorted_map.entrySet()){
+			//System.out.println(e.getKey());
+			BasicDBObject idQuery = new BasicDBObject("itemId",e.getKey());
 			result.append(MongoUtil.itemCollection.findOne(idQuery));
 			count++;
 
-			if(count<9){
+			if(count<=9){
 				result.append(", ");
 			}
 			if(count >=10)
 				break;
 
 		}
-		return callback+"({ \"result\" : ["+ result.toString() +"]})";
+		//return callback+"({ \"result\" : ["+ result.toString() +"]})";
+		return "{ \"result\" : ["+ result.toString() +"]}";
 	}
 	
-	class ValueComparator implements Comparator<ObjectId> {
+	@Path("topHotels")	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public String getTopItems(
+			@QueryParam("itemID") String itemID,
+			@QueryParam("langitude") String langitude,
+			@QueryParam("latitude") String latitude,
+			@QueryParam("eastLat") String eastLat,
+			@QueryParam("eastLong") String eastLong,
+			@QueryParam("westLat") String westLat,
+			@QueryParam("westLong") String westLong,
+			@QueryParam("callback") String callback) {
 
-	    Map<ObjectId, Double> base;
-	    public ValueComparator(Map<ObjectId, Double> base) {
+		BasicDBObject dbquery = new BasicDBObject();
+		
+		if(itemID != null){
+			dbquery.put("menuItems.itemID", itemID);
+		}
+
+		if(latitude!=null && langitude != null && eastLat!=null && eastLong!=null && westLat!=null && westLong!=null){
+			dbquery.put("location.lat",new BasicDBObject("$gt", eastLat).append("$lt", westLat));
+			dbquery.put("location.lng",new BasicDBObject("$gt", eastLong).append("$lt", westLong));
+		}
+
+		DBCursor cur = MongoUtil.hotelCollection.find(dbquery);
+		
+		StringBuffer result = new StringBuffer().append("");
+		while(cur.hasNext()){
+			result.append(cur.next().toString());
+			if(cur.hasNext()) result.append(", ");
+		}
+		//System.out.println(ratingMap);
+				//return callback+"({ \"result\" : ["+ result.toString() +"]})";
+		return "{ \"result\" : ["+ result.toString() +"]}";
+	}
+	
+	
+	class ValueComparator implements Comparator<String> {
+
+	    Map<String, Double> base;
+	    public ValueComparator(Map<String, Double> base) {
 	        this.base = base;
 	    }
 
 	    // Note: this comparator imposes orderings that are inconsistent with equals.    
-	    public int compare(ObjectId a, ObjectId b) {
-	        if (base.get(a) < base.get(b)) {
-	            return -1;
+	    public int compare(String a, String b) {
+	        if (base.get(a) >= base.get(b)) {
+	            //System.out.println("a : "+a + base.get(a));
+	        	return -1;
 	        } else {
 	            return 1;
 	        } // returning 0 would merge keys

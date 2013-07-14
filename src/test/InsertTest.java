@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +26,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
+import food.data.Deal;
 import food.data.Hotel;
 import food.data.Item;
 import food.data.Location;
@@ -40,18 +42,79 @@ public class InsertTest {
 		//Item item1 = new Item(1, "bir");
 		double lat = 17.3667;
 		double lng = 78.4667;
-		String result = makeRestCall("https://api.foursquare.com/v2/venues/explore?venuePhotos=1&ll="
-		+lat+","+lng+"&section=food,drinks,coffee&client_secret=RZG14LIXYDCWNBZXMRNI0O5J11CDVFJTALZP2LBGXO5RNB5G&client_id=Y4KGBABM13G0KEYBZZUIDE1PYMUCEZJHRFAFJ0BEHBH20KCL&v=20130713");
+		//String result = makeRestCall("https://api.foursquare.com/v2/venues/explore?venuePhotos=1&ll="
+		//+lat+","+lng+"&section=food,drinks,coffee&client_secret=RZG14LIXYDCWNBZXMRNI0O5J11CDVFJTALZP2LBGXO5RNB5G&client_id=Y4KGBABM13G0KEYBZZUIDE1PYMUCEZJHRFAFJ0BEHBH20KCL&v=20130713");
 		//System.out.println(result);
-		HashMap<String, ArrayList<Item>> map = new HashMap<String, ArrayList<Item>>();
-		map.put("bakery", createListFromFile("/Users/GreatGod/Desktop/bakery.list"));
-		map.put("rest", createListFromFile("/Users/GreatGod/Desktop/rest.list"));
-		map.put("ice", createListFromFile("/Users/GreatGod/Desktop/ice.list"));
-		map.put("cafe", createListFromFile("/Users/GreatGod/Desktop/cafe.list"));
-		insertFrom4Square(result,map);
-
+		//HashMap<String, ArrayList<Item>> map = new HashMap<String, ArrayList<Item>>();
+		//map.put("bakery", createListFromFile("/Users/GreatGod/Desktop/bakery.list"));
+		//map.put("rest", createListFromFile("/Users/GreatGod/Desktop/rest.list"));
+		//map.put("ice", createListFromFile("/Users/GreatGod/Desktop/ice.list"));
+		//map.put("cafe", createListFromFile("/Users/GreatGod/Desktop/cafe.list"));
+	//	insertFrom4Square(result,map);
+		inseetFromLocu(makeRestCall("http://api.locu.com/v1_0/menu_item/search/?api_key=7ee2879545b136914aa24ed53ec5dae62d07199e&category=restaurant&country=usa"));
+		
 	}
 	
+	private static void inseetFromLocu(String result) {
+		JsonParser jsonParser = new JsonParser();
+		JsonArray objects = jsonParser.parse(result).getAsJsonObject().get("objects").getAsJsonArray();
+		for(int i=0;i<objects.size();i++){
+			String desc = objects.get(i).getAsJsonObject().get("description").getAsString();
+			String id = objects.get(i).getAsJsonObject().get("id").getAsString();
+			String name = objects.get(i).getAsJsonObject().get("name").getAsString();
+			JsonObject venue = objects.get(i).getAsJsonObject().get("venue").getAsJsonObject();
+			String country = venue.get("country").getAsString();
+			String hotelId = venue.get("id").getAsString();
+			Double lat = venue.get("lat").getAsDouble();
+			Double lng = venue.get("long").getAsDouble();
+			String hotelName = venue.get("name").getAsString();
+			String region = venue.get("region").getAsString();
+			String address = venue.get("street_address").getAsString()  
+					  +" "+ venue.get("country").getAsString() + " " +venue.get("postal_code").getAsInt();
+			
+			
+			//BasicDBObject dbquery = new BasicDBObject("itemName", name);
+			Item item = new Item(id, name, desc, getLargeImgUrl(name, lat, lng, "q"));
+			//DBObject obj = MongoUtil.itemCollection.findOne(dbquery);
+			Gson gson = new Gson();
+			BasicDBObject searchQuery = new BasicDBObject("itemName", name);
+			DBObject searchObj = MongoUtil.itemCollection.findOne(searchQuery);
+			DBObject obj;
+			System.out.println("!!!!!!!!!!"+name);
+
+			if(searchObj == null){
+				obj = (DBObject)JSON.parse(gson.toJson(item));
+				MongoUtil.itemCollection.save(obj);
+			}else{
+//				System.out.println("!!!!!!!!!!"+name);
+				obj=searchObj;
+			}
+			Item lastItem = gson.fromJson(gson.toJson(obj), Item.class);
+			Location location = new Location(lat, lng, address, venue.get("locality").getAsString() , venue.get("region").getAsString(), country);
+			ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+			MenuItem menuItem = new MenuItem(lastItem.getItemId(), getRandomNumber(0, 5));
+			menuItems.add(menuItem);
+			
+			BasicDBObject dbquery = new BasicDBObject("hotelId", hotelId);
+			DBObject hotelResult = MongoUtil.hotelCollection.findOne(dbquery);
+			if(hotelResult==null){
+				Hotel hotel = new Hotel(hotelId, hotelName, menuItems, new ArrayList<Review>(), location, 0, 0, 0, getRandomNumber(0, 5), "9991122121", getLargeImgUrl(hotelName, lat, lng, "q"));
+				DBObject hotelObj = (DBObject)JSON.parse(gson.toJson(hotel));
+				MongoUtil.hotelCollection.save(hotelObj);
+			}else{
+				Hotel hotel = gson.fromJson(jsonParser.parse(hotelResult.toString()),Hotel.class);
+				ArrayList<MenuItem> temp = hotel.getMenuItems();
+				temp.add(menuItem);
+				hotel.setMenuItems(temp);
+				MongoUtil.hotelCollection.remove(dbquery);
+				//DBObject updateQuery = new BasicDBObject("$set",new BasicDBObject("menuItems",temp));
+				//MongoUtil.hotelCollection.update(dbquery, updateQuery);
+				DBObject hotelObj = (DBObject)JSON.parse(gson.toJson(hotel));
+				MongoUtil.hotelCollection.save(hotelObj);
+			}
+		}
+	}
+
 	private static ArrayList<Item> createListFromFile(String fileName) {
 		BufferedReader in = null;
 		ArrayList<Item> list = new ArrayList<Item>();
@@ -60,8 +123,8 @@ public class InsertTest {
 			in = new BufferedReader(new FileReader(fileName));
 			String line = null;
 			while ((line = in.readLine()) != null) {
-				String[] splits = line.trim().split(" \\| ");
-				Item item = new Item(itemId++, splits[0],null);
+				String[] splits = line.trim().split("\\|");
+				Item item = new Item(itemId+++"", splits[0].trim(),null,getLargeImgUrl(splits[0].trim(), 0, 0, "q"));
 				if(splits.length > 1 && splits[1]!=null){
 					item.setItemDesc(splits[1]);
 				}
@@ -146,7 +209,7 @@ public class InsertTest {
 			String categories = venue.get("categories").getAsJsonArray().get(0).getAsJsonObject().get("name").getAsString();
 			menuItems.addAll(getMenuItemFromCatagory(map,categories));
 			
-			Hotel hotel = new Hotel(id,name, menuItems, reviews,locationObj, checkinsCount,usersCount, tipCount,rating,contact);
+			Hotel hotel = new Hotel(id,name, menuItems, reviews,locationObj, checkinsCount,usersCount, tipCount,rating,contact,getLargeImgUrl(name+" "+locationObj.getCity(),locationLat,locationLng,"m"));
 			Gson gson = new Gson();
 			DBObject obj = (DBObject)JSON.parse(gson.toJson(hotel));
 			MongoUtil.hotelCollection.save(obj);
@@ -177,6 +240,23 @@ public class InsertTest {
 		}
 	}
 
+	static void insertDeals(){
+		DBCursor cur = MongoUtil.hotelCollection.find();
+		int i=0;
+		Gson gson = new Gson();
+		while(cur.hasNext()){
+			DBObject obj = cur.next();
+			String hotelId = (String)obj.get("hotelId");
+			obj.get("menuItems.itemID");
+			 
+			Calendar calendar = Calendar.getInstance();
+			calendar.add(Calendar.DAY_OF_YEAR, 1);
+			Date tomorrow = calendar.getTime();
+			MongoUtil.dealCollection.save((DBObject)JSON.parse(gson.toJson(new Deal(new Date(), calendar.getTime(), , hotelId, get))));
+			
+		}
+	}
+	
 	private static ArrayList<MenuItem> getMenuList(ArrayList<Item> items) {
 		ArrayList<MenuItem> result = new ArrayList<MenuItem>();
 		Gson gson = new Gson();
@@ -189,7 +269,7 @@ public class InsertTest {
 				obj = (DBObject)JSON.parse(gson.toJson(item));
 				MongoUtil.itemCollection.save(obj);
 			}
-			result.add(new MenuItem((ObjectId)obj.get("_id"), getRandomNumber(1, 5), "default.jpg")); 
+			result.add(new MenuItem(obj.get("_id").toString(), getRandomNumber(1, 5))); 
 			
 		}
 		return result;
@@ -228,4 +308,82 @@ public class InsertTest {
 		return result.toString();
 	}
 
+	static String getLargeImgUrl(String text, double lat, double lng, String type){
+		String restURL = "http://api.flickr.com/services/rest/?method=flickr.photos.search&" +
+				"api_key=bed36549031f5209c0221db9e92ce4cc&accuracy=11&format=json&nojsoncallback=1";
+		if(lat!=0)
+			restURL = restURL+"&lat="+lat;
+		if(lng!=0)
+			restURL = restURL + "&lon"+lng;
+		
+		if(text != null)
+			restURL=restURL+"&text="+text;	
+		String result = makeRestCall(restURL);
+		JsonParser jsonParser = new JsonParser();
+		JsonArray photos = jsonParser.parse(result).getAsJsonObject().get("photos").getAsJsonObject().get("photo").getAsJsonArray();
+		if(photos.size() == 0)
+			return "default.jpg";
+				
+		JsonObject	photo = photos.get(0).getAsJsonObject();
+		
+		String imgurl = "http://farm"+photo.get("farm").getAsString()+".staticflickr.com/"+photo.get("server").getAsString()+"/"+
+				photo.get("id").getAsString()+"_"+ photo.get("secret").getAsString() +"_"+type+".jpg";
+		System.out.println(imgurl);
+		return imgurl;
+	}
+	
+	static Map<Integer,ArrayList<Integer>> genrateDealsForHotels(ArrayList<Integer> itemLists, double rating)
+	{
+	    int[] NoDays = {1,2,3};
+	    int[] percentages = {25,40,10,15,30};
+
+	    int Deals = 0;
+
+	    if (rating > 8) {
+	        Deals = 1;
+	    } else if (rating > 7) {
+	        Deals = 2;
+	    } else if (rating > 5) {
+	        Deals = 3;
+	    } else if (rating > 4) {
+	        Deals = 4;
+	    }
+
+	    int length = itemLists.size();
+
+	    ArrayList<Integer> list = getRandomNumberInPool(0, length-1, Deals);
+
+	    Map<Integer,ArrayList<Integer>> discounts = new HashMap<Integer,ArrayList<Integer>>();
+
+	    for (int i = 0; i < list.size(); i++) {
+	        int discountPer = percentages[getRandomNumber(0, 4)];
+	        int noDays = NoDays[getRandomNumber(0, 2)];
+	        int itemId = list.get(i);
+	        ArrayList<Integer> s = new ArrayList<Integer>();
+	        s.add(discountPer);
+	        s.add(noDays);
+	        discounts.put(itemLists.get(itemId),s);
+	    }
+
+	    return discounts;
+	}
+
+	static ArrayList<Integer> getRandomNumberInPool(int min, int max, int pickNo)
+	{
+	    Random rand = new Random();
+
+	    ArrayList<Integer> ranNum = new ArrayList<Integer>();
+
+	    for (int i = 0; i <pickNo; i++) {
+	        int rndnum = getRandomNumber(min, max);
+
+	        while (ranNum.contains(rndnum)) {
+	            rndnum = getRandomNumber(min, max);
+	        }
+
+	        ranNum.add(rndnum);
+	    }
+
+	    return ranNum;
+	}
 }

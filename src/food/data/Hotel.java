@@ -13,11 +13,12 @@ public class Hotel {
 	long tipCount;
 	double ratings;
 	String contact;
+	String hotelUrl;
 	
 	public Hotel(String hotelId, String hotelName, ArrayList<MenuItem> menuItems,
 			ArrayList<Review> userReviews, Location location,
 			long checkinsCount, long usersCount, long tipCount, double ratings,
-			String contact) {
+			String contact, String hotelUrl) {
 		super();
 		this.hotelId = hotelId;
 		this.hotelName = hotelName;
@@ -29,6 +30,7 @@ public class Hotel {
 		this.tipCount = tipCount;
 		this.ratings = ratings;
 		this.contact = contact;
+		this.hotelUrl = hotelUrl;
 	}
 	public String getHotelId() {
 		return hotelId;
@@ -83,6 +85,18 @@ public class Hotel {
 	}
 	public void setRatings(double ratings) {
 		this.ratings = ratings;
+	}
+	public String getContact() {
+		return contact;
+	}
+	public void setContact(String contact) {
+		this.contact = contact;
+	}
+	public String getHotelUrl() {
+		return hotelUrl;
+	}
+	public void setHotelUrl(String hotelUrl) {
+		this.hotelUrl = hotelUrl;
 	}
 	
 }

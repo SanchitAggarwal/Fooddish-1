@@ -1,19 +1,21 @@
 package food.data;
 
 public class Item {
-	int itemId;
+	String itemId;
 	String itemName;
 	String itemDesc;
+	String itemurl;
 	
-	public Item(int itemId, String itemName, String itemString) {
+	public Item(String itemId, String itemName, String itemString, String itemurl) {
 		this.itemId = itemId;
 		this.itemName = itemName;
 		this.itemDesc = itemString;
+		this.itemurl = itemurl;
 	}
-	public int getItemId() {
+	public String getItemId() {
 		return itemId;
 	}
-	public void setItemId(int id) {
+	public void setItemId(String id) {
 		this.itemId = id;
 	}
 	public String getItemName() {
@@ -27,5 +29,13 @@ public class Item {
 	}
 	public void setItemDesc(String itemDesc) {
 		this.itemDesc = itemDesc;
+	}
+	
+	public String getItemurl() {
+		return itemurl;
+	}
+	
+	public void setItemurl(String itemurl) {
+		this.itemurl = itemurl;
 	}
 }

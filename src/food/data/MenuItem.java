@@ -1,34 +1,28 @@
 package food.data;
 
-import org.bson.types.ObjectId;
-
 public class MenuItem {
-	ObjectId itemID;
-	int rating;
-	String imgurl;
+	String itemID;
+	double rating;
 	
-	public MenuItem(ObjectId item, int rating, String imgurl) {
-		super();
+	public MenuItem(String item, double rating) {
 		this.itemID = item;
 		this.rating = rating;
-		this.imgurl = imgurl;
 	}
-	public ObjectId getItem() {
+
+	public String getItemID() {
 		return itemID;
 	}
-	public void setItem(ObjectId item) {
-		this.itemID = item;
+
+	public void setItemID(String itemID) {
+		this.itemID = itemID;
 	}
-	public int getRating() {
+
+	public double getRating() {
 		return rating;
 	}
-	public void setRating(int rating) {
+
+	public void setRating(double rating) {
 		this.rating = rating;
 	}
-	public String getImgurl() {
-		return imgurl;
-	}
-	public void setImgurl(String imgurl) {
-		this.imgurl = imgurl;
-	}
+	
 }

@@ -11,6 +11,7 @@ public class MongoUtil {
 	private static DB db;
 	public static DBCollection hotelCollection;
 	public static DBCollection itemCollection;
+	public static DBCollection dealCollection;
 	public static DBCollection topItems;
 	
 	static{
@@ -19,9 +20,10 @@ public class MongoUtil {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-		db = mongoClient.getDB("food");
+		db = mongoClient.getDB("food5");
 		hotelCollection = db.getCollection("hotelCollection");
 		itemCollection = db.getCollection("itemCollection");
+		dealCollection = db.getCollection("dealCollection");
 	}
 
 	@Override
