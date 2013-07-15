@@ -31,7 +31,8 @@ public class HotelService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getHotels(@QueryParam("hotelId") String hotelId, 
-			@QueryParam("hotelName") String hotelName, 
+			@QueryParam("hotelName") String hotelName,
+			@QueryParam("itemID") String itemID,
 			@QueryParam("langitude") String langitude,
 			@QueryParam("latitude") String latitude,
 			@QueryParam("eastLat") String eastLat,
@@ -43,6 +44,9 @@ public class HotelService {
 		BasicDBObject dbquery = new BasicDBObject();
 		if(hotelId != null){
 			dbquery.put("hotelId", hotelId);
+		}
+		if(itemID != null){
+			dbquery.put("itemID", itemID);
 		}
 		if(hotelName != null){
 			Pattern john = Pattern.compile(".*"+hotelName+".*", Pattern.CASE_INSENSITIVE);
@@ -64,6 +68,15 @@ public class HotelService {
 		//return callback+"({ \"result\" : ["+ result.toString() +"]})";
 		return "{ \"result\" : ["+ result.toString() +"]}";
 	} 
+
+	public String getItemName(String itemID) {
+		BasicDBObject dbquery = new BasicDBObject("itemId",itemID);
+		DBCursor cur = MongoUtil.itemCollection.find(dbquery);
+		if(cur.hasNext()){
+			return cur.next().get("itemName").toString();
+		}
+		return "";
+	}
 
 	@Path("topItems")	
 	@GET
@@ -128,7 +141,7 @@ public class HotelService {
 	@Path("topHotels")	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getTopItems(
+	public String getTopHotels(
 			@QueryParam("itemID") String itemID,
 			@QueryParam("langitude") String langitude,
 			@QueryParam("latitude") String latitude,

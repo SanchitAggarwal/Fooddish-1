@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<html lang="en" ng-app="fooddish">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Fooddish</title>
+        <meta name="description" content="Food Maniac">
+        <meta name="viewport" content="width=device-width">
+        <meta name="author" content="Neo@YahooHackathon">
+
+        <style type="text/css">
+            body {
+                padding-top: 60px;
+                padding-bottom: 40px;
+            }
+        </style>
+        <link rel="stylesheet" href="css/vendor/bootstrap-responsive.min.css">
+        <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+        <link rel="stylesheet" href="css/main.css">
+
+
+    </head>
+    <body ng-controller="fooddishController">
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please
+                <a href="http://browsehappy.com/">upgrade your browser</a> or
+                <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a>
+                to improve your experience.
+            </p>
+        <![endif]-->
+        <div class="container">
+            <div id="navigationBar" class="navbar">
+                <div class="navbar-inner">
+                    <a class="brand" href="#"><img src="img/logo.png" width="100px"/> dish</a>
+                </div>
+            </div>
+            <div id="map" style="height: 200px">
+
+            </div>
+
+            <div id="topFoodCarousel"  class="row-fluid carousel slide">
+                <div id="c" class="carousel-inner" style="position:relative;">
+                    <div class="item active">
+                            <ul class="thumbnails">
+                                <li class="span2" ng-repeat="i in  [0,1,2,3,4,5]" item-id="{{foodItemList[i].itemId}}">
+                                    <a ng-href="" ng-click="getHotelByItem('{{foodItemList[i].itemId}}')">
+                                        <img class="thumbnail" data-content="{{foodItemList[i].itemDesc}}" data-original-title="{{item.itemName}}"  ng-src="{{foodItemList[i].itemurl}}" alt="{{foodItemList[i].itemName}}"  style="z-index: 10000; width: 150px; height: 150px;"
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    <div class="item">
+                        <ul class="thumbnails">
+                            <li class="span2" ng-repeat="i in [6,7,8,9]" item-id="{{foodItemList[i].itemId}}">
+                                <a ng-href="" ng-click="getHotelByItem('{{foodItemList[i].itemId}}')">
+                                    <img class="thumbnail" data-content="{{foodItemList[i].itemDesc}}" data-original-title="{{item.itemName}}"  ng-src="{{foodItemList[i].itemurl}}" alt="{{foodItemList[i].itemName}}"  style="z-index: 10000; width: 150px; height: 150px;"
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <a class="left carousel-control" href="#topFoodCarousel" data-slide="prev">&lsaquo;</a>
+                <a class="right carousel-control" href="#topFoodCarousel" data-slide="next">&rsaquo;</a>
+            </div>
+            <div id="hotelList">
+                <div class="accordion" id="hotelListAccordian">
+                    <div class="accordion-group" ng-repeat="hotel in hotelList">
+                        <div class="accordion-heading">
+                            <a class="accordion-toggle" data-toggle="collapse" data-parent="hotelListAccordian" href="#{{hotel.hotelId}}"">
+                                <i class="icon-chevron-down"></i>
+                            </a>
+                            <div class="media">
+                                    <ul class="media-list">
+                                        <li class="media">
+                                            <a href="#" class="pull-left" data-original-title="{{hotel.hotelName}}">
+                                                <img class="media-object" ng-src="{{hotelUrl}}" alt="{{hotel.hotelName}}"  style="z-index: 10000; width: 75px; height: 75px;" >
+                                            </a>
+                                            <div class="media-body">
+                                                <h4 class="media-heading">{{hotel.hotelName}}</h4>
+                                                <p id="{{hotel.hotelId}}_{{hotel.ratings}}"></p>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                        </div>
+                        <div id="{{hotel.hotelId}}" class="accordion-body collapse" style="height: 0px;">
+                            <div class="accordion-inner">
+                                <div id="hotelInfo" class="row-fluid">
+                                    <ul class="thumbnails">
+                                        <li>
+                                            <div class="thumbnail">
+                                                <img data-src="{{hotel.hotelUrl}}" alt="300x200" style="width: 300px; height: 200px;">
+                                                <div class="caption">
+                                                    <h3>Menu List</h3>
+                                                    <p class="span2" ng-repeat="i in  hotel.menuItems" item-id="{{i.itemId}}"></p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
+        <script>window.angular || document.write('<script src="js/vendor/angular.min.js"><\/script>')</script>
+        <script src="js/vendor/bootstrap.min.js"></script>
+        <script src="js/vendor/tv4.min.js"></script>
+        <script src="js/vendor/yui-min.js"></script>
+        <script src="js/page.js"></script>
+
+        <script type="text/javascript"
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAC4BsPrWMXN2hGXbmRS36z1eGD4Q2o8Uo&sensor=false">
+        </script>
+    </body>
+</html>

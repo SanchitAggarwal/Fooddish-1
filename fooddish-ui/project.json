@@ -1,0 +1,41 @@
+{
+    "project":{
+            "name": "fooddish",
+            "description": "mobile app for food maniac",
+            "organization": "neo@hackathon",
+            "url": "https://github.com/SanchitAggarwal/fooddish.git",
+            "program": "Yahoo Hackathon 2013"
+    },
+    "author": {
+            "name": "Sanchit Aggarwal",
+            "email": "sanchitagarwal108@gmail.com"
+    },
+    "mentor": [
+        {
+            "name": "Dharmesh Kakadiya",
+            "email": ""
+        },
+        {
+            "name": "Vinod",
+            "email": ""
+        }
+    ],
+    "contributors": [
+        {
+            "name": "Sanchit Aggarwal",
+            "email": "sanchitagarwal108@gmail.com"
+        },
+        {
+            "name": "Chandrakant",
+            "email": ""
+        }
+    ],
+    "technologies": [
+        "HTML5",
+        "CSS3",
+        "YUI",
+        "jQuery",
+        "Google Maps API",
+        "rest"
+    ]
+}

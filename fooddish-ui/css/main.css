@@ -1,0 +1,21 @@
+body{
+    background:url("img/bg.png") repeat no-scroll;
+}
+.foodItems {
+    background: #fff4a5;
+    border: 2px solid #d8be00;
+    border-left: none;
+    margin:10px;
+    color: #d8be00;
+    padding:2em 0;
+    font-size:80%;
+
+}
+
+#topFoodItems .foodItems:first-child {
+    border-left:2px solid #d8be00;
+}
+
+#map img{
+    max-width: none;
+}

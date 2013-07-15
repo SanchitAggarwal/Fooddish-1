@@ -32,6 +32,7 @@ import food.data.Item;
 import food.data.Location;
 import food.data.MenuItem;
 import food.data.Review;
+import food.service.HotelService;
 
 public class InsertTest {
 	static int itemId =1;
@@ -51,8 +52,9 @@ public class InsertTest {
 		//map.put("ice", createListFromFile("/Users/GreatGod/Desktop/ice.list"));
 		//map.put("cafe", createListFromFile("/Users/GreatGod/Desktop/cafe.list"));
 	//	insertFrom4Square(result,map);
-		inseetFromLocu(makeRestCall("http://api.locu.com/v1_0/menu_item/search/?api_key=7ee2879545b136914aa24ed53ec5dae62d07199e&category=restaurant&country=usa"));
-		
+		//inseetFromLocu(makeRestCall("http://api.locu.com/v1_0/menu_item/search/?api_key=7ee2879545b136914aa24ed53ec5dae62d07199e&category=restaurant&country=usa"));
+		HotelService h = new HotelService();
+		System.out.println(h.getItemName("7d021b0c9f4ec79a3d5c76fae8ba8a91b7457979bc9731b2b4c948c92b292a60"));
 	}
 	
 	private static void inseetFromLocu(String result) {
@@ -252,7 +254,7 @@ public class InsertTest {
 			Calendar calendar = Calendar.getInstance();
 			calendar.add(Calendar.DAY_OF_YEAR, 1);
 			Date tomorrow = calendar.getTime();
-			MongoUtil.dealCollection.save((DBObject)JSON.parse(gson.toJson(new Deal(new Date(), calendar.getTime(), , hotelId, get))));
+			//MongoUtil.dealCollection.save((DBObject)JSON.parse(gson.toJson(new Deal(new Date(), calendar.getTime(), , hotelId, get))));
 			
 		}
 	}
